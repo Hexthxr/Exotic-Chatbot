@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("AIzaSyD0tRGNYqORwrcugDbr9g7-cmLckTGqQT0"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def ask_chatbot(user_input):
     try:
