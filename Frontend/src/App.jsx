@@ -27,21 +27,23 @@ const CHIP_PROMPTS = [
 ];
 
 export default function App() {
-  const [sessions, setSessions]     = useState(loadSessions);
-  const [currentId, setCurrentId]   = useState(null);
-  const [messages, setMessages]     = useState([]);
-  const [input, setInput]           = useState('');
-  const [isTyping, setIsTyping]     = useState(false);
+  const [sessions,    setSessions]    = useState(loadSessions);
+  const [currentId,   setCurrentId]   = useState(null);
+  const [messages,    setMessages]    = useState([]);
+  const [input,       setInput]       = useState('');
+  const [isTyping,    setIsTyping]    = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const chatEndRef = useRef(null);
+  const chatEndRef  = useRef(null);
   const textareaRef = useRef(null);
 
+  // Auto-scroll เมื่อมีข้อความใหม่
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // ── persist session ──────────────────────────────────
   const persistSession = useCallback((id, msgs) => {
     setSessions(prev => {
       const next = prev.map(s =>
@@ -52,6 +54,20 @@ export default function App() {
     });
   }, []);
 
+  // ── auto-title ───────────────────────────────────────
+  const autoTitle = useCallback((id, text) => {
+    setSessions(prev => {
+      const next = prev.map(s =>
+        s.id === id && s.title === 'แชทใหม่'
+          ? { ...s, title: text.slice(0, 42) + (text.length > 42 ? '…' : '') }
+          : s
+      );
+      saveSessions(next);
+      return next;
+    });
+  }, []);
+
+  // ── new chat ─────────────────────────────────────────
   const newChat = useCallback(() => {
     const id = Date.now().toString();
     const session = { id, title: 'แชทใหม่', time: new Date().toISOString(), msgs: [] };
@@ -66,6 +82,7 @@ export default function App() {
     setTimeout(() => textareaRef.current?.focus(), 50);
   }, []);
 
+  // ── load chat ─────────────────────────────────────────
   const loadChat = useCallback((id) => {
     const s = sessions.find(x => x.id === id);
     if (!s) return;
@@ -74,6 +91,7 @@ export default function App() {
     if (window.innerWidth <= 768) setSidebarOpen(false);
   }, [sessions]);
 
+  // ── delete chat ──────────────────────────────────────
   const deleteChat = useCallback((id) => {
     setSessions(prev => {
       const next = prev.filter(x => x.id !== id);
@@ -83,18 +101,7 @@ export default function App() {
     if (currentId === id) { setCurrentId(null); setMessages([]); }
   }, [currentId]);
 
-  const autoTitle = useCallback((id, text) => {
-    setSessions(prev => {
-      const next = prev.map(s =>
-        s.id === id && s.title === 'แชทใหม่'
-          ? { ...s, title: text.slice(0, 42) + (text.length > 42 ? '…' : '') }
-          : s
-      );
-      saveSessions(next);
-      return next;
-    });
-  }, []);
-
+  // ── send message ─────────────────────────────────────
   const sendMessage = useCallback(async (textOverride) => {
     const text = (textOverride ?? input).trim();
     if (!text || isTyping) return;
@@ -119,30 +126,29 @@ export default function App() {
     setIsTyping(true);
     autoTitle(chatId, text);
 
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+    // reset textarea height
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('http://localhost:5000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages.map(m => ({ role: m.role, content: m.content }))
-        }),
+        body: JSON.stringify({ message: text }),  // ใช้ format เดิมของ backend
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Server error');
 
       const botMsg = { role: 'assistant', content: data.reply };
       const finalMessages = [...nextMessages, botMsg];
+
       setMessages(finalMessages);
       persistSession(chatId, finalMessages);
 
     } catch (err) {
-      const errMsg = { role: 'assistant', content: 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง' };
-      setMessages(prev => [...prev, errMsg]);
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง' },
+      ]);
       console.error(err);
     } finally {
       setIsTyping(false);
@@ -150,6 +156,7 @@ export default function App() {
     }
   }, [input, isTyping, currentId, messages, autoTitle, persistSession]);
 
+  // ── keyboard handler ──────────────────────────────────
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -157,16 +164,16 @@ export default function App() {
     }
   };
 
+  // ── textarea auto-resize ──────────────────────────────
   const handleInputChange = (e) => {
     setInput(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(p => !p);
-  };
+  const toggleSidebar = () => setSidebarOpen(p => !p);
 
+  // ── render ───────────────────────────────────────────
   return (
     <div className="layout">
       <Sidebar
@@ -185,14 +192,16 @@ export default function App() {
         {/* Topbar */}
         <header className="topbar">
           <button className="icon-btn" onClick={toggleSidebar} title="เมนู">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="6" x2="21" y2="6"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6"  x2="21" y2="6"/>
               <line x1="3" y1="12" x2="21" y2="12"/>
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
           <div className="logo-ring">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <path d="M9 9h.01M15 9h.01"/>
               <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
@@ -237,8 +246,13 @@ export default function App() {
               rows={1}
               disabled={isTyping}
             />
-            <button className="send-btn" onClick={() => sendMessage()} disabled={isTyping || !input.trim()}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <button
+              className="send-btn"
+              onClick={() => sendMessage()}
+              disabled={isTyping || !input.trim()}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
