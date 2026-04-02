@@ -51,3 +51,6 @@ client/.vite/
 # Misc
 *.pem
 .yarn-integrity
+
+.env
+.env.*
