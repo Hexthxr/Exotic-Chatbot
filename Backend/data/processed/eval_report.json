@@ -1,0 +1,713 @@
+{
+  "metrics": {
+    "n": 52,
+    "top1_acc": 1.0,
+    "top3_acc": 1.0,
+    "mrr": 1.0
+  },
+  "per_category": {
+    "Aquatic": {
+      "acc": 1.0,
+      "hit1": 10,
+      "total": 10
+    },
+    "Reptile": {
+      "acc": 1.0,
+      "hit1": 19,
+      "total": 19
+    },
+    "Bird": {
+      "acc": 1.0,
+      "hit1": 9,
+      "total": 9
+    },
+    "Amphibian": {
+      "acc": 1.0,
+      "hit1": 6,
+      "total": 6
+    },
+    "Mammal": {
+      "acc": 1.0,
+      "hit1": 8,
+      "total": 8
+    }
+  },
+  "details": [
+    {
+      "id": "EXO240",
+      "name": "Severum",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Severum",
+        "Discus",
+        "Freshwater Angelfish"
+      ]
+    },
+    {
+      "id": "EXO028",
+      "name": "Ackie Monitor",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Ackie Monitor",
+        "Savannah Monitor",
+        "Green Tree Monitor"
+      ]
+    },
+    {
+      "id": "EXO115",
+      "name": "Fahaka Puffer",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Fahaka Puffer",
+        "Mbu Puffer",
+        "Pea Puffer"
+      ]
+    },
+    {
+      "id": "EXO214",
+      "name": "Jenday Conure",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Jenday Conure",
+        "Nanday Parakeet",
+        "Gold-capped Conure"
+      ]
+    },
+    {
+      "id": "EXO054",
+      "name": "Tomato Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Tomato Frog",
+        "White's Tree Frog",
+        "Pacman Frog"
+      ]
+    },
+    {
+      "id": "EXO006",
+      "name": "Kenyan Sand Boa",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Kenyan Sand Boa",
+        "Sunbeam Snake",
+        "African House Snake"
+      ]
+    },
+    {
+      "id": "EXO009",
+      "name": "Milk Snake",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Milk Snake",
+        "Black Kingsnake",
+        "California Kingsnake"
+      ]
+    },
+    {
+      "id": "EXO113",
+      "name": "Motoro Stingray",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Motoro Stingray",
+        "Lionfish",
+        "Alligator Gar"
+      ]
+    },
+    {
+      "id": "EXO099",
+      "name": "Black-headed Caique",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Black-headed Caique",
+        "Blue-headed Pionus",
+        "Plum-headed Parakeet"
+      ]
+    },
+    {
+      "id": "EXO058",
+      "name": "Budgett's Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Budgett's Frog",
+        "African Clawed Frog",
+        "Pacman Frog"
+      ]
+    },
+    {
+      "id": "EXO102",
+      "name": "Zebra Finch",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Zebra Finch",
+        "Society Finch",
+        "Gouldian Finch"
+      ]
+    },
+    {
+      "id": "EXO212",
+      "name": "Senegal Bushbaby",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Senegal Bushbaby",
+        "Senegal Parrot",
+        "Senegal Bichir"
+      ]
+    },
+    {
+      "id": "EXO127",
+      "name": "Crystal Red Shrimp",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Crystal Red Shrimp",
+        "Blue Bolt Shrimp",
+        "Bamboo Shrimp"
+      ]
+    },
+    {
+      "id": "EXO162",
+      "name": "Mali Uromastyx",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Mali Uromastyx",
+        "Uromastyx",
+        "Red Tegu"
+      ]
+    },
+    {
+      "id": "EXO109",
+      "name": "Discus",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Discus",
+        "Severum",
+        "Elephantnose Fish"
+      ]
+    },
+    {
+      "id": "EXO171",
+      "name": "Diamondback Terrapin",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Diamondback Terrapin",
+        "Common Map Turtle",
+        "False Map Turtle"
+      ]
+    },
+    {
+      "id": "EXO215",
+      "name": "Nanday Parakeet",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Nanday Parakeet",
+        "Jenday Conure",
+        "Derbyan Parakeet"
+      ]
+    },
+    {
+      "id": "EXO213",
+      "name": "Prehensile-tailed Porcupine",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Prehensile-tailed Porcupine",
+        "Short-tailed Opossum",
+        "Monkey-tailed Skink"
+      ]
+    },
+    {
+      "id": "EXO155",
+      "name": "Red Tegu",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Red Tegu",
+        "Argentine Black and White Tegu",
+        "Savannah Monitor"
+      ]
+    },
+    {
+      "id": "EXO001",
+      "name": "Ball Python",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Ball Python",
+        "Blood Python",
+        "Woma Python"
+      ]
+    },
+    {
+      "id": "EXO060",
+      "name": "Chinchilla",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Chinchilla",
+        "Degu",
+        "Wallaby"
+      ]
+    },
+    {
+      "id": "EXO121",
+      "name": "Datnoid",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Datnoid",
+        "Fire Eel",
+        "Clown Knifefish"
+      ]
+    },
+    {
+      "id": "EXO157",
+      "name": "Fire Skink",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Fire Skink",
+        "Peter's Banded Skink",
+        "Red-eyed Crocodile Skink"
+      ]
+    },
+    {
+      "id": "EXO092",
+      "name": "Lovebird",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Lovebird",
+        "Sun Conure",
+        "Cockatiel"
+      ]
+    },
+    {
+      "id": "EXO186",
+      "name": "Imitator Poison Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Imitator Poison Frog",
+        "Golden Poison Frog",
+        "Strawberry Poison Dart Frog"
+      ]
+    },
+    {
+      "id": "EXO176",
+      "name": "Red-eyed Crocodile Skink",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Red-eyed Crocodile Skink",
+        "Fire Skink",
+        "Peter's Banded Skink"
+      ]
+    },
+    {
+      "id": "EXO100",
+      "name": "Senegal Parrot",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Senegal Parrot",
+        "Senegal Bichir",
+        "Meyer's Parrot"
+      ]
+    },
+    {
+      "id": "EXO173",
+      "name": "Reeves's Turtle",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Reeves's Turtle",
+        "Common Map Turtle",
+        "African Sideneck Turtle"
+      ]
+    },
+    {
+      "id": "EXO166",
+      "name": "Elongated Tortoise",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Elongated Tortoise",
+        "Greek Tortoise",
+        "Yellow-footed Tortoise"
+      ]
+    },
+    {
+      "id": "EXO105",
+      "name": "Toco Toucan",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Toco Toucan",
+        "Kinkajou",
+        "Umbrella Cockatoo"
+      ]
+    },
+    {
+      "id": "EXO055",
+      "name": "African Bullfrog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "African Bullfrog",
+        "African Clawed Frog",
+        "Pacman Frog"
+      ]
+    },
+    {
+      "id": "EXO180",
+      "name": "American Green Tree Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "American Green Tree Frog",
+        "Gray Treefrog",
+        "White's Tree Frog"
+      ]
+    },
+    {
+      "id": "EXO160",
+      "name": "Monkey-tailed Skink",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Monkey-tailed Skink",
+        "Fire Skink",
+        "Emerald Tree Skink"
+      ]
+    },
+    {
+      "id": "EXO249",
+      "name": "Red Hook Silver Dollar",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Red Hook Silver Dollar",
+        "Silver Dollar",
+        "Rope Fish"
+      ]
+    },
+    {
+      "id": "EXO098",
+      "name": "Indian Ringneck",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Indian Ringneck",
+        "African Grey Parrot",
+        "Derbyan Parakeet"
+      ]
+    },
+    {
+      "id": "EXO169",
+      "name": "Common Musk Turtle",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Common Musk Turtle",
+        "Razor-backed Musk Turtle",
+        "Common Map Turtle"
+      ]
+    },
+    {
+      "id": "EXO207",
+      "name": "Ring-tailed Lemur",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Ring-tailed Lemur",
+        "Monkey-tailed Skink",
+        "Knob-tailed Gecko"
+      ]
+    },
+    {
+      "id": "EXO167",
+      "name": "African Sideneck Turtle",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "African Sideneck Turtle",
+        "African Helmeted Turtle",
+        "Reeves's Turtle"
+      ]
+    },
+    {
+      "id": "EXO003",
+      "name": "Burmese Python",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Burmese Python",
+        "Ball Python",
+        "Woma Python"
+      ]
+    },
+    {
+      "id": "EXO231",
+      "name": "Major Mitchell's Cockatoo",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Major Mitchell's Cockatoo",
+        "Bare-eyed Cockatoo",
+        "Goffin's Cockatoo"
+      ]
+    },
+    {
+      "id": "EXO027",
+      "name": "Blue-tongued Skink",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Blue-tongued Skink",
+        "Peter's Banded Skink",
+        "Fire Skink"
+      ]
+    },
+    {
+      "id": "EXO065",
+      "name": "Mongolian Gerbil",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Mongolian Gerbil",
+        "Degu",
+        "Fancy Rat"
+      ]
+    },
+    {
+      "id": "EXO254",
+      "name": "Tire Track Eel",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Tire Track Eel",
+        "Fire Eel",
+        "Alligator Gar"
+      ]
+    },
+    {
+      "id": "EXO256",
+      "name": "Delhezi Bichir",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Delhezi Bichir",
+        "Ornate Bichir",
+        "Senegal Bichir"
+      ]
+    },
+    {
+      "id": "EXO044",
+      "name": "Chinese Softshell Turtle",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Chinese Softshell Turtle",
+        "Pig-nosed Turtle",
+        "Mata Mata Turtle"
+      ]
+    },
+    {
+      "id": "EXO147",
+      "name": "Knob-tailed Gecko",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Knob-tailed Gecko",
+        "Chinese Cave Gecko",
+        "Tokay Gecko"
+      ]
+    },
+    {
+      "id": "EXO209",
+      "name": "Lesser Hedgehog Tenrec",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Lesser Hedgehog Tenrec",
+        "Hedgehog",
+        "Fire Skink"
+      ]
+    },
+    {
+      "id": "EXO030",
+      "name": "Green Iguana",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Green Iguana",
+        "Cuban Rock Iguana",
+        "Amazon Tree Boa"
+      ]
+    },
+    {
+      "id": "EXO185",
+      "name": "Strawberry Poison Dart Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Strawberry Poison Dart Frog",
+        "Bumblebee Poison Dart Frog",
+        "Golden Poison Frog"
+      ]
+    },
+    {
+      "id": "EXO062",
+      "name": "Degu",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Degu",
+        "Guinea Pig",
+        "Chinchilla"
+      ]
+    },
+    {
+      "id": "EXO122",
+      "name": "Redtail Catfish",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Redtail Catfish",
+        "Fire Eel",
+        "Ornate Bichir"
+      ]
+    },
+    {
+      "id": "EXO075",
+      "name": "Sugar Glider",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0,
+      "top3": [
+        "Sugar Glider",
+        "Common Marmoset",
+        "Kinkajou"
+      ]
+    }
+  ]
+}

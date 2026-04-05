@@ -7,11 +7,19 @@ CORS(app)
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json["message"]
+    data       = request.json or {}
+    user_input = data.get("message", "").strip()
+    history    = data.get("history", [])   # ← รับ conversation history จาก frontend
 
-    reply = ask_chatbot(user_input)
+    if not user_input:
+        return jsonify({"error": "message is required"}), 400
 
-    return jsonify({"reply": reply})
+    result = ask_chatbot(user_input, history=history)
+    return jsonify(result)
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "rag": "enabled", "model": "gemini-2.5-flash"})
 
 if __name__ == "__main__":
     app.run(debug=True)
