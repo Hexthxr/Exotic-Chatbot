@@ -83,6 +83,21 @@ def _build_gemini_contents(history: list, new_context: str, user_input: str) -> 
     return contents
 
 
+# ── Extract last mentioned species from history ─────────────────────────
+def extract_last_species(history: list) -> str:
+    """ดึงชื่อสัตว์ที่พูดถึงล่าสุดจาก conversation history"""
+    rows = _get_rows()
+    for msg in reversed(history):
+        for part in msg.get("parts", []):
+            text = part.get("text", "").lower()
+            for row in rows:
+                name_en = row.get("common_name_en", "").lower()
+                name_th = row.get("common_name_th", "")
+                if (name_en and name_en in text) or (name_th and name_th in text):
+                    return f"{row.get('common_name_en', '')} {name_th}".strip()
+    return ""
+
+
 # ══════════════════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════════════════
@@ -107,8 +122,17 @@ def ask_chatbot(user_input: str, history: list = None) -> dict:
         sources     = []
         mode        = "rag"
 
+        # ── Enrich short follow-up queries with species context ─────────
+        # ถ้าคำถามสั้น (< 15 ตัวอักษร) และไม่มีชื่อสัตว์ → ดึงชื่อจาก history มาเสริม
+        enriched_input = user_input
+        if len(user_input.strip()) < 15 and history:
+            last_species = extract_last_species(history)
+            if last_species:
+                enriched_input = f"{user_input} ของ {last_species}"
+                print(f"[chatbot] Enriched: '{user_input}' → '{enriched_input}'")
+
         # ── Path A: Categorical / filter query ─────────────────────────
-        intent = detect_intent(user_input)
+        intent = detect_intent(enriched_input)
         if intent:
             filtered = apply_filter(rows, intent["filters"])
             filtered = sort_rows(filtered, intent.get("sort_by", "care_level_rank"))
@@ -131,7 +155,7 @@ def ask_chatbot(user_input: str, history: list = None) -> dict:
         # ── Path B: Specific species query → RAG ───────────────────────
         if not context_str:
             context_str, sources, has_rag_data = build_context(
-                user_input, top_k=3, threshold=0.05
+                enriched_input, top_k=3, threshold=0.05
             )
             mode = "rag" if has_rag_data else "rag_empty"
 

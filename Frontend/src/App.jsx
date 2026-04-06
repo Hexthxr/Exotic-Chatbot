@@ -43,6 +43,11 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  const geminiHistory = messages.map(m => ({
+  role: m.role === 'user' ? 'user' : 'model',
+  parts: [{ text: m.content }]
+}));
+
   // ── persist session ──────────────────────────────────
   const persistSession = useCallback((id, msgs) => {
     setSessions(prev => {
@@ -133,7 +138,7 @@ export default function App() {
       const res = await fetch('http://localhost:5000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),  // ใช้ format เดิมของ backend
+        body: JSON.stringify({ message: text, history: geminiHistory })  // ใช้ format เดิมของ backend
       });
 
       const data = await res.json();
