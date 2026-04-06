@@ -8,7 +8,7 @@ Flow:
   3. ทุก turn: ส่ง messages[] history ให้ Gemini (multi-turn conversation)
 """
 
-import os, csv
+import os, csv, re
 from pathlib import Path
 from google import genai
 from dotenv import load_dotenv
@@ -35,13 +35,51 @@ def _get_rows():
 
 
 # ── Base system prompt ──────────────────────────────────────────────────
-BASE_SYSTEM = """คุณคือ ExoticMate ผู้เชี่ยวชาญด้านสัตว์ exotic ที่ตอบคำถามจากฐานข้อมูลที่กำหนดเท่านั้น
+BASE_SYSTEM = """คุณคือ ExoticMate ระบบให้ข้อมูลสัตว์ exotic เท่านั้น
 
-กฎสำคัญ:
-1. ตอบเฉพาะข้อมูลที่มีในฐานข้อมูลที่ให้มา ห้ามสร้างข้อมูลใหม่
-2. ตอบเป็นภาษาไทยเสมอ ยกเว้นชื่อวิทยาศาสตร์
-3. หากถามเรื่องสุขภาพหรืออาการป่วย ให้แนะนำพบสัตวแพทย์ exotic เสมอ
-4. ตอบอย่างกระชับ ตรงประเด็น เป็นมิตร ใช้ emoji ประกอบ"""
+กฎเหล็กที่ห้ามละเมิดเด็ดขาด:
+1. หากคำถามไม่เกี่ยวกับสัตว์ exotic การเลี้ยงดู อาหาร หรือกฎหมายสัตว์
+   ตอบว่า "ขอโทษครับ ฉันตอบได้เฉพาะเรื่องสัตว์ exotic เท่านั้น 🐾" แล้วหยุด
+2. หากถามเรื่องกิน ฆ่า ทำร้าย หรือทำอันตรายสัตว์
+   ตอบว่า "ExoticMate ให้ข้อมูลการเลี้ยงดูเท่านั้น ไม่สามารถตอบคำถามนี้ได้ครับ 🙏" แล้วหยุด
+3. ตอบเฉพาะข้อมูลในฐานข้อมูลที่ให้มา ห้ามสร้างข้อมูลใหม่
+4. ตอบเป็นภาษาไทยเสมอ ยกเว้นชื่อวิทยาศาสตร์
+5. หากถามเรื่องสุขภาพหรืออาการป่วย ให้แนะนำพบสัตวแพทย์ exotic เสมอ
+6. ตอบสั้น กระชับ เป็นมิตร ใช้ emoji ประกอบ
+
+ห้ามตอบเรื่อง: บุคคล ความสัมพันธ์ การเมือง อาหารคน เทคโนโลยี หรือเรื่องทั่วไปใดๆ ทั้งสิ้น"""
+
+
+# ── Keywords สำหรับเช็ค off-topic และ harmful ──────────────────────────
+EXOTIC_KEYWORDS = [
+    "สัตว์", "เลี้ยง", "gecko", "python", "snake", "งู", "กิ้งก่า",
+    "นก", "กบ", "เต่า", "แมงมุม", "tarantula", "chameleon", "axolotl",
+    "กฎหมาย", "cites", "อาหาร", "กรง", "อุณหภูมิ", "ความชื้น",
+    "ดูแล", "เพาะพันธุ์", "ซื้อ", "ราคา", "exotic", "สายพันธุ์",
+    "ชื่อวิทยาศาสตร์", "ใบอนุญาต", "พิษ", "อันตราย", "อายุขัย",
+    "ถิ่นกำเนิด", "นิสัย", "กินอะไร", "อยู่ที่ไหน", "ใหญ่แค่ไหน",
+    "ball python", "leopard", "bearded dragon", "iguana", "tortoise",
+    "parrot", "hamster", "sugar glider", "hedgehog", "ferret",
+    "chinchilla", "scorpion", "monitor", "chameleon", "skink",
+]
+
+HARMFUL_KEYWORDS = [
+    "ฆ่า", "ทำร้าย", "ทรมาน", "ต้ม", "ย่าง", "ทอด",
+    "กำจัด", "เชือด", "แทง", "ตี", "kill", "hurt", "harm",
+    "จะกิน", "กินมัน", "กินได้มั้ย", "กินได้ไหม", "เอามากิน",
+]
+
+
+def is_harmful(text: str) -> bool:
+    """เช็คว่าถามเรื่องทำร้ายสัตว์ไหม"""
+    text_lower = text.lower()
+    return any(kw in text_lower for kw in HARMFUL_KEYWORDS)
+
+
+def is_off_topic(text: str) -> bool:
+    """เช็คว่าไม่เกี่ยวกับสัตว์ exotic ไหม"""
+    text_lower = text.lower()
+    return not any(kw in text_lower for kw in EXOTIC_KEYWORDS)
 
 
 def _build_gemini_contents(history: list, new_context: str, user_input: str) -> list:
@@ -51,9 +89,7 @@ def _build_gemini_contents(history: list, new_context: str, user_input: str) -> 
     """
     contents = []
 
-    # Inject system as first user turn (Gemini 2.x ยังไม่รองรับ system role โดยตรง)
     if not history:
-        # Turn แรก: แนบ context + system ไปด้วย
         system_with_context = BASE_SYSTEM
         if new_context:
             system_with_context += f"\n\n════════════════════\nข้อมูลจากฐานข้อมูล:\n════════════════════\n{new_context}\n════════════════════"
@@ -62,11 +98,9 @@ def _build_gemini_contents(history: list, new_context: str, user_input: str) -> 
             "parts": [{"text": f"[SYSTEM]\n{system_with_context}\n\n[USER]\n{user_input}"}]
         })
     else:
-        # Turn ต่อๆ ไป: ส่ง history ทั้งหมด + context ใหม่ (ถ้ามี)
         for msg in history:
             contents.append(msg)
 
-        # ถ้ามี context ใหม่จากการ filter/RAG ให้แนบใน user turn นี้
         if new_context:
             user_text = (
                 f"[ข้อมูลเพิ่มเติมจากฐานข้อมูล]\n{new_context}\n\n"
@@ -111,10 +145,20 @@ def ask_chatbot(user_input: str, history: list = None) -> dict:
       reply      : str
       has_data   : bool
       sources    : list
-      mode       : "filter" | "rag" | "error"
+      mode       : "filter" | "rag" | "error" | "off_topic" | "harmful"
     """
     if history is None:
         history = []
+
+    # ── เช็ค harmful ก่อนเลย ไม่ส่งให้ Gemini ──────────────────────────
+    if is_harmful(user_input):
+        print(f"[chatbot] Harmful detected: '{user_input}'")
+        return {
+            "reply":    "ExoticMate ให้ข้อมูลการเลี้ยงดูเท่านั้น ไม่สามารถตอบคำถามนี้ได้ครับ 🙏",
+            "has_data": False,
+            "sources":  [],
+            "mode":     "harmful",
+        }
 
     try:
         rows        = _get_rows()
@@ -123,13 +167,23 @@ def ask_chatbot(user_input: str, history: list = None) -> dict:
         mode        = "rag"
 
         # ── Enrich short follow-up queries with species context ─────────
-        # ถ้าคำถามสั้น (< 15 ตัวอักษร) และไม่มีชื่อสัตว์ → ดึงชื่อจาก history มาเสริม
         enriched_input = user_input
         if len(user_input.strip()) < 15 and history:
             last_species = extract_last_species(history)
             if last_species:
                 enriched_input = f"{user_input} ของ {last_species}"
                 print(f"[chatbot] Enriched: '{user_input}' → '{enriched_input}'")
+
+        # ── เช็ค off-topic หลัง enrich แล้ว ───────────────────────────
+        # ใช้ enriched_input เพื่อให้คำถามสั้นที่ต่อจากบริบทสัตว์ผ่านได้
+        if is_off_topic(enriched_input):
+            print(f"[chatbot] Off-topic detected: '{enriched_input}'")
+            return {
+                "reply":    "ขอโทษครับ ฉันตอบได้เฉพาะเรื่องสัตว์ exotic เท่านั้น 🐾",
+                "has_data": False,
+                "sources":  [],
+                "mode":     "off_topic",
+            }
 
         # ── Path A: Categorical / filter query ─────────────────────────
         intent = detect_intent(enriched_input)
