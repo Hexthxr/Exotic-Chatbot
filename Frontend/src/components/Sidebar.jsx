@@ -5,7 +5,7 @@ function timeLbl(iso) {
   const diff = Math.floor((now - d) / 86400000);
   if (diff === 0) return 'วันนี้';
   if (diff === 1) return 'เมื่อวาน';
-  if (diff < 7) return `${diff} วันที่แล้ว`;
+  if (diff < 7)  return `${diff} วันที่แล้ว`;
   return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
 }
 
@@ -19,7 +19,17 @@ function groupByDate(sessions) {
   return groups;
 }
 
-export default function Sidebar({ isOpen, sessions, currentId, onNewChat, onLoadChat, onDeleteChat, onToggle, searchQuery, onSearch }) {
+// Avatar initials helper
+function getInitials(username = '') {
+  return username.slice(0, 2).toUpperCase() || '?';
+}
+
+export default function Sidebar({
+  isOpen, sessions, currentId,
+  onNewChat, onLoadChat, onDeleteChat, onToggle,
+  searchQuery, onSearch,
+  user, onShowAuth, onLogout,
+}) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -74,14 +84,25 @@ export default function Sidebar({ isOpen, sessions, currentId, onNewChat, onLoad
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
-            type="text"
-            placeholder="ค้นหาแชท..."
-            value={searchQuery}
-            onChange={e => onSearch(e.target.value)}
+            type="text" placeholder="ค้นหาแชท..."
+            value={searchQuery} onChange={e => onSearch(e.target.value)}
           />
         </div>
 
+        {/* ── Session list ── */}
         <div className="sb-history">
+          {/* Guest banner — แสดงเฉพาะตอนไม่ได้ login */}
+          {!user && (
+            <div className="sb-guest-banner">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>เข้าสู่ระบบเพื่อบันทึกประวัติ</span>
+            </div>
+          )}
+
           {filtered.length === 0 ? (
             <div className="history-empty">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -106,11 +127,12 @@ export default function Sidebar({ isOpen, sessions, currentId, onNewChat, onLoad
                     </div>
                     <div className="chat-item-body">
                       <div className="chat-item-title">{s.title}</div>
-                      <div className="chat-item-time">{new Date(s.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div className="chat-item-time">
+                        {new Date(s.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                     <button
-                      className="chat-del"
-                      title="ลบ"
+                      className="chat-del" title="ลบ"
                       onClick={e => { e.stopPropagation(); onDeleteChat(s.id); }}
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -126,16 +148,35 @@ export default function Sidebar({ isOpen, sessions, currentId, onNewChat, onLoad
           )}
         </div>
 
+        {/* ── Footer: User info / Login button ── */}
         <div className="sb-footer">
-          <div className="sb-user">
-            <div className="sb-avatar">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
+          {user ? (
+            /* ── Logged in ── */
+            <div className="sb-user-card">
+              <div className="sb-avatar-initials">{getInitials(user.username)}</div>
+              <div className="sb-user-info">
+                <div className="sb-user-name">{user.username}</div>
+                <div className="sb-user-email">{user.email}</div>
+              </div>
+              <button className="sb-logout-btn" title="ออกจากระบบ" onClick={onLogout}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
             </div>
-            <span>ผู้ใช้งาน</span>
-          </div>
+          ) : (
+            /* ── Guest ── */
+            <button className="sb-login-btn" onClick={onShowAuth}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
+              เข้าสู่ระบบ / สมัครสมาชิก
+            </button>
+          )}
         </div>
 
       </aside>
