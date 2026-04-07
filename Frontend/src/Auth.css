@@ -166,7 +166,7 @@
 .auth-submit {
   padding: 12px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #fff;
+  color: #fdfdfd;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
@@ -229,17 +229,24 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 14px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-3);
+  padding: 11px 14px;
+  background: linear-gradient(135deg, #2f7d5a, #3f9468);
+  border: none;
   border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: 0.82rem;
+  color: #fff;
+  font-size: 0.83rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 3px 14px rgba(47,125,90,0.45);
+  letter-spacing: 0.01em;
 }
-.sb-login-btn:hover { background: rgba(47,125,90,0.15); transform: translateY(-1px); }
+.sb-login-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(47,125,90,0.55);
+}
+.sb-login-btn:active { transform: translateY(0); }
 
 /* User card (logged in) */
 .sb-user-card {
@@ -304,21 +311,28 @@
 .topbar-login-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-3);
-  border-radius: 20px;
-  color: var(--accent);
-  font-size: 0.8rem;
+  gap: 7px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, #2f7d5a, #4a9e72);
+  border: none;
+  border-radius: 22px;
+  color: #fff;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
   white-space: nowrap;
   margin-left: auto;
   margin-right: 8px;
+  box-shadow: 0 3px 12px rgba(47,125,90,0.35);
+  letter-spacing: 0.01em;
 }
-.topbar-login-btn:hover { background: rgba(47,125,90,0.15); transform: translateY(-1px); }
+.topbar-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(47,125,90,0.45);
+  opacity: 0.93;
+}
+.topbar-login-btn:active { transform: translateY(0); }
 
 .topbar-user {
   display: flex;

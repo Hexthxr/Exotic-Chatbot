@@ -4,6 +4,9 @@ import ChatMessage    from './components/ChatMessage';
 import TypingIndicator from './components/TypingIndicator';
 import WelcomeScreen  from './components/WelcomeScreen';
 import AuthModal      from './components/AuthModal';
+import LoginPage      from './pages/LoginPage';
+import RegisterPage   from './pages/RegisterPage';
+import './auth.css';
 
 const LOCAL_KEY = 'exotic_sessions_v1';
 const API       = 'http://localhost:5000';
@@ -33,6 +36,7 @@ export default function App() {
   });
   const [token,     setToken]     = useState(() => localStorage.getItem('exotic_token') || null);
   const [showAuth,  setShowAuth]  = useState(false);
+  const [authPage,  setAuthPage]  = useState(null); // null | 'login' | 'register'
 
   // ── Session / chat state ──────────────────────────────────────────
   const [sessions,     setSessions]     = useState([]);
@@ -76,6 +80,8 @@ export default function App() {
   const handleAuth = (newUser, newToken) => {
     setUser(newUser);
     setToken(newToken);
+    setAuthPage(null);
+    setShowAuth(false);
   };
 
   const handleLogout = () => {
@@ -273,7 +279,7 @@ export default function App() {
         searchQuery={searchQuery}
         onSearch={setSearchQuery}
         user={user}
-        onShowAuth={() => setShowAuth(true)}
+        onShowAuth={() => setAuthPage('login')}
         onLogout={handleLogout}
       />
 
@@ -302,13 +308,13 @@ export default function App() {
           </div>
 
           {/* Auth button in topbar */}
-          {user ? (
+          {/* {user ? (
             <div className="topbar-user">
               <div className="topbar-avatar">{user.username.slice(0,2).toUpperCase()}</div>
               <span className="topbar-username">{user.username}</span>
             </div>
           ) : (
-            <button className="topbar-login-btn" onClick={() => setShowAuth(true)}>
+            <button className="topbar-login-btn" onClick={() => setAuthPage('login')}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
@@ -317,7 +323,7 @@ export default function App() {
               </svg>
               เข้าสู่ระบบ
             </button>
-          )}
+          )} */}
 
           <span className="badge-online"><i/>Online</span>
         </header>
@@ -375,11 +381,29 @@ export default function App() {
         </div>
       </div>
 
-      {/* Auth Modal */}
+      {/* Auth Modal (legacy, keep for compatibility) */}
       {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}
           onAuth={handleAuth}
+        />
+      )}
+
+      {/* Login Page */}
+      {authPage === 'login' && (
+        <LoginPage
+          onAuth={handleAuth}
+          onGoRegister={() => setAuthPage('register')}
+          onBack={() => setAuthPage(null)}
+        />
+      )}
+
+      {/* Register Page */}
+      {authPage === 'register' && (
+        <RegisterPage
+          onAuth={handleAuth}
+          onGoLogin={() => setAuthPage('login')}
+          onBack={() => setAuthPage(null)}
         />
       )}
     </div>

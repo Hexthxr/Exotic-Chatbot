@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 export default function AuthModal({ onClose, onAuth }) {
   const [tab,     setTab]     = useState('login');   // 'login' | 'register'
   const [form,    setForm]    = useState({ username: '', email: '', password: '' });

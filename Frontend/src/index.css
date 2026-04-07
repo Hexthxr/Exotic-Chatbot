@@ -196,7 +196,7 @@ body::before {
   cursor: pointer;
   padding: 7px;
   border-radius: 10px;
-  color: rgba(255,255,255,0.68);
+  /* color: rgba(248, 247, 247, 0.68); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -967,4 +967,23 @@ body::before {
   .welcome-chip {
     font-size: 12px;
   }
+  .sidebar .icon-btn {
+  color: rgba(255,255,255,0.68);
+  background: rgba(2, 1, 1, 0.04);
+}
+
+.sidebar .icon-btn:hover {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+  border-color: rgba(255,255,255,0.08);
+}
+.topbar .icon-btn {
+  color: #020202;
+  background: rgba(0,0,0,0.05);
+}
+
+.topbar .icon-btn:hover {
+  background: rgba(0,0,0,0.1);
+  color: #000;
+}
 }
