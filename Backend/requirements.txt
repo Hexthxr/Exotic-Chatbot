@@ -4,3 +4,12 @@ pymongo
 python-dotenv
 flask-bcrypt
 flask-jwt-extended
+google-genai
+google-generativeai
+numpy
+pandas
+scikit-learn
+scikit-learn
+pymongo
+bcrypt
+flask-jwt-extended
