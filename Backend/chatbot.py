@@ -1,242 +1,21 @@
-# """
-# chatbot.py  —  RAG + Filter + Conversation History  (v2 — context memory fix)
-# ════════════════════════════════════════════════════════════════════════════════
-# """
- 
-# import os, csv, re
-# from pathlib import Path
-# from google import genai
-# from dotenv import load_dotenv
- 
-# _use_vector = False
-# try:
-#     from vector_rag import build_context, build_system_prompt, retrieve_with_filter
-#     _use_vector = True
-#     print("[chatbot] ✅ Using Vector RAG (ChromaDB)")
-# except FileNotFoundError:
-#     from rag import build_context, build_system_prompt
-#     print("[chatbot] ⚠️  Vector DB not found → TF-IDF fallback")
-# except ImportError:
-#     from rag import build_context, build_system_prompt
-#     print("[chatbot] ⚠️  Missing packages → TF-IDF fallback")
- 
-# from filter_query import detect_intent, apply_filter, sort_rows, build_filter_context
- 
-# load_dotenv()
-# client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
- 
-# CHROMA_CAT_MAP = {
-#     "Bird": "Bird", "Reptile": "Reptile", "Mammal": "Mammal",
-#     "Amphibian": "Amphibian", "Aquatic": "Aquatic",
-# }
- 
-# _raw_rows = None
- 
-# def _get_rows():
-#     global _raw_rows
-#     if _raw_rows is None:
-#         csv_path = Path(__file__).parent / "data" / "exotic_pets.csv"
-#         with open(csv_path, encoding="utf-8-sig") as f:
-#             _raw_rows = list(csv.DictReader(f))
-#     return _raw_rows
- 
- 
-# BASE_SYSTEM = """คุณคือ ExoticMate ผู้เชี่ยวชาญด้านสัตว์ exotic ที่ตอบคำถามจากฐานข้อมูลที่กำหนดเท่านั้น
- 
-# กฎสำคัญ:
-# 1. ตอบเฉพาะข้อมูลที่มีในฐานข้อมูลที่ให้มา ห้ามสร้างข้อมูลใหม่
-# 2. ตอบเป็นภาษาไทยเสมอ ยกเว้นชื่อวิทยาศาสตร์
-# 3. หากถามเรื่องสุขภาพหรืออาการป่วย ให้แนะนำพบสัตวแพทย์ exotic เสมอ
-# 4. ตอบอย่างกระชับ ตรงประเด็น เป็นมิตร ใช้ emoji ประกอบ
-# 5. จดจำบริบทการสนทนา และตอบ follow-up ได้อย่างต่อเนื่อง"""
- 
- 
-# FOLLOWUP_PATTERNS = [
-#     r"^(แล้ว|ถ้า|แบบ|แต่|และ|หรือ|อีก|เพิ่ม|ต่อ)",
-#     r"(ล่ะ|อ่ะ|นะ|มั้ย|ไหม|หน่อย)$",
-#     r"^(มัน|เขา|นั้น|นี้|ตัว|ชนิด|ประเภท|อัน)",
-#     r"(ของมัน|ของเขา|ของตัวนี้|ชนิดนี้|ตัวนี้)",
-#     r"^(กิน|อยู่|เลี้ยง|ดูแล|ราคา|กฎหมาย|อุณหภูมิ|ขนาด|อายุ)",
-# ]
- 
-# def _is_followup(text: str, history: list) -> bool:
-#     if not history:
-#         return False
-#     t = text.strip().lower()
-#     if len(t) < 20:
-#         return True
-#     for pat in FOLLOWUP_PATTERNS:
-#         if re.search(pat, t):
-#             return True
-#     return False
- 
- 
-# def extract_last_species(history: list) -> str:
-#     rows = _get_rows()
-#     for msg in reversed(history):
-#         for part in msg.get("parts", []):
-#             text = part.get("text", "").lower()
-#             for row in rows:
-#                 name_en = row.get("common_name_en", "").lower()
-#                 name_th = row.get("common_name_th", "")
-#                 if (name_en and name_en in text) or (name_th and name_th in text):
-#                     return f"{row.get('common_name_en', '')} {name_th}".strip()
-#     return ""
- 
- 
-# def _extract_last_context_query(history: list) -> str:
-#     """ดึง user query แรกสุดจาก history เพื่อ re-retrieve context"""
-#     for msg in history:
-#         if msg.get("role") == "user":
-#             parts_text = " ".join(p.get("text", "") for p in msg.get("parts", []))
-#             if "[USER]" in parts_text:
-#                 parts_text = parts_text.split("[USER]")[-1]
-#             if "[คำถาม]" in parts_text:
-#                 parts_text = parts_text.split("[คำถาม]")[-1]
-#             cleaned = parts_text.strip()
-#             if cleaned and len(cleaned) > 5:
-#                 return cleaned
-#     return ""
- 
- 
-# def _build_gemini_contents(history: list, new_context: str, user_input: str) -> list:
-#     contents = []
-#     if not history:
-#         system_block = BASE_SYSTEM
-#         if new_context:
-#             system_block += (
-#                 "\n\n════════════════════\nข้อมูลจากฐานข้อมูล:\n════════════════════\n"
-#                 f"{new_context}\n════════════════════"
-#             )
-#         contents.append({
-#             "role":  "user",
-#             "parts": [{"text": f"[SYSTEM]\n{system_block}\n\n[USER]\n{user_input}"}],
-#         })
-#     else:
-#         for msg in history:
-#             contents.append(msg)
-#         if new_context:
-#             user_text = f"[ข้อมูลเพิ่มเติมจากฐานข้อมูล]\n{new_context}\n\n[คำถาม]\n{user_input}"
-#         else:
-#             user_text = user_input
-#         contents.append({"role": "user", "parts": [{"text": user_text}]})
-#     return contents
- 
- 
-# def ask_chatbot(user_input: str, history: list = None) -> dict:
-#     if history is None:
-#         history = []
- 
-#     try:
-#         rows        = _get_rows()
-#         context_str = ""
-#         sources     = []
-#         mode        = "vector_rag" if _use_vector else "tfidf_rag"
- 
-#         # ── Step 1: ตรวจ follow-up + enrich query ────────────────────
-#         is_followup    = _is_followup(user_input, history)
-#         enriched_input = user_input
- 
-#         if is_followup:
-#             last_species = extract_last_species(history)
-#             if last_species:
-#                 enriched_input = f"{user_input} {last_species}"
-#                 print(f"[chatbot] Follow-up enriched: '{user_input}' → '{enriched_input}'")
- 
-#         # ── Step 2: Filter path (categorical) ────────────────────────
-#         intent = detect_intent(enriched_input)
-#         if intent:
-#             if _use_vector:
-#                 cat_key    = intent["filters"].get("category")
-#                 chroma_cat = CHROMA_CAT_MAP.get(cat_key) if cat_key else None
-#                 vec_results = retrieve_with_filter(
-#                     enriched_input, category=chroma_cat, top_k=15, threshold=0.15,
-#                 )
-#                 if vec_results:
-#                     candidate_rows = [r["row"] for r in vec_results]
-#                     attr_filters   = {k: v for k, v in intent["filters"].items() if k != "category"}
-#                     if attr_filters:
-#                         candidate_rows = apply_filter(candidate_rows, attr_filters)
-#                     candidate_rows = sort_rows(candidate_rows, intent.get("sort_by", "care_level_rank"))
-#                     if candidate_rows:
-#                         context_str = build_filter_context(candidate_rows, intent, max_rows=20)
-#                         sources     = [{"id": r.get("id"), "name_en": r.get("common_name_en"),
-#                                         "name_th": r.get("common_name_th")} for r in candidate_rows[:10]]
-#                         mode = "vector_filter"
-#             if not context_str:
-#                 filtered = apply_filter(rows, intent["filters"])
-#                 filtered = sort_rows(filtered, intent.get("sort_by", "care_level_rank"))
-#                 if filtered:
-#                     context_str = build_filter_context(filtered, intent, max_rows=25)
-#                     sources     = [{"id": r.get("id"), "name_en": r.get("common_name_en"),
-#                                     "name_th": r.get("common_name_th")} for r in filtered[:10]]
-#                     mode = "filter"
- 
-#         # ── Step 3: RAG path (specific species/topic) ─────────────────
-#         if not context_str:
-#             context_str, sources, has_data = build_context(
-#                 enriched_input, top_k=3,
-#                 threshold=0.25 if _use_vector else 0.05,
-#             )
-#             mode = ("vector_rag" if _use_vector else "tfidf_rag") if has_data else "rag_empty"
- 
-#         # ── Step 4: Follow-up fallback — re-use context จาก turn แรก ─
-#         if not context_str and is_followup and history:
-#             prev_query = _extract_last_context_query(history)
-#             if prev_query:
-#                 context_str, sources, has_data = build_context(
-#                     prev_query, top_k=3,
-#                     threshold=0.20 if _use_vector else 0.04,
-#                 )
-#                 if has_data:
-#                     mode = "followup_reuse"
-#                     print(f"[chatbot] Reused context from: '{prev_query[:60]}'")
- 
-#         # ── Step 5: Call Gemini ───────────────────────────────────────
-#         contents = _build_gemini_contents(history, context_str, user_input)
-#         response = client.models.generate_content(
-#             model="gemini-2.5-flash",
-#             contents=contents,
-#         )
-
-#         reply    = response.text or "ขอโทษครับ ไม่สามารถสร้างคำตอบได้"
- 
-#         return {
-#             "reply":    reply,
-#             "has_data": bool(context_str),
-#             "sources":  sources,
-#             "mode":     mode,
-#             "engine":   "vector" if _use_vector else "tfidf",
-#         }
- 
-#     except Exception as e:
-#         print(f"[chatbot] ERROR: {e}")
-#         import traceback; traceback.print_exc()
-#         return {
-#             "reply":    "ระบบมีปัญหา กรุณาลองใหม่อีกครั้งครับ",
-#             "has_data": False,
-#             "sources":  [],
-#             "mode":     "error",
-#             "engine":   "error",
-#         }
- 
-
-
 """
-chatbot.py — RAG + Filter + Conversation History (Fixed + No Hallucination)
+chatbot.py  —  RAG + Filter + Conversation Memory (5-turn sliding window)
+══════════════════════════════════════════════════════════════════════════
+Flow:
+  1. รับ history ทั้งหมดจาก frontend
+  2. ตัด sliding window เหลือแค่ 5 turns ล่าสุด (10 messages)
+     → ให้โมเดลจำบริบทใน session แต่ไม่หนักเกินไป
+  3. detect_intent → filter path หรือ RAG path
+  4. inject chunk_text เป็น context
+  5. call Gemini
 """
 
-import os
-import csv
-import re
-import time
+import os, csv, json, re, time
 from pathlib import Path
 from google import genai
 from dotenv import load_dotenv
 
-# ─────────────────────────────────────────────
-# Load RAG (Vector หรือ TF-IDF fallback)
-# ─────────────────────────────────────────────
+# ── Load RAG engine ─────────────────────────────────────────────────────
 _use_vector = False
 try:
     from vector_rag import build_context, build_system_prompt, retrieve_with_filter
@@ -244,94 +23,84 @@ try:
     print("[chatbot] ✅ Using Vector RAG (ChromaDB)")
 except Exception:
     from rag import build_context, build_system_prompt
-    print("[chatbot] ⚠️ Using TF-IDF fallback")
+    print("[chatbot] ⚠️  Using TF-IDF RAG")
 
 from filter_query import detect_intent, apply_filter, sort_rows, build_filter_context
 
-# ─────────────────────────────────────────────
-# Init Gemini
-# ─────────────────────────────────────────────
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# ─────────────────────────────────────────────
-# CSV โหลดครั้งเดียว
-# ─────────────────────────────────────────────
+# ── Config ──────────────────────────────────────────────────────────────
+MEMORY_TURNS = 5        # ← จำ 5 บทสนทนา (= 10 messages: 5 user + 5 model)
+GPT_MODEL    = "gemini-2.5-flash"
+
+# ── Load dataset once (จาก clean.json ที่ data_prep สร้างไว้) ──────────
 _raw_rows = None
 
 def _get_rows():
     global _raw_rows
     if _raw_rows is None:
-        csv_path = Path(__file__).parent / "data" / "exotic_pets.csv"
-        with open(csv_path, encoding="utf-8-sig") as f:
-            _raw_rows = list(csv.DictReader(f))
+        clean_path = Path(__file__).parent / "data" / "processed" / "clean.json"
+        with open(clean_path, encoding="utf-8") as f:
+            _raw_rows = json.load(f)["rows"]
+        print(f"[chatbot] Loaded {len(_raw_rows)} species from clean.json")
     return _raw_rows
 
-# ─────────────────────────────────────────────
-# System Prompt (เข้ม ป้องกันมั่ว)
-# ─────────────────────────────────────────────
-BASE_SYSTEM = """คุณคือ ExoticMate ผู้ช่วยแนะนำสัตว์ exotic สำหรับผู้เริ่มต้น
+
+# ── System prompt ────────────────────────────────────────────────────────
+BASE_SYSTEM = """คุณคือ ExoticMate ผู้เชี่ยวชาญด้านสัตว์ exotic
 
 กฎสำคัญ:
-- ใช้เฉพาะข้อมูลที่มีใน [DATA] เท่านั้น
-- ห้ามสร้างชื่อสัตว์ใหม่ที่ไม่มีในข้อมูล
-- สามารถ "อธิบายเพิ่มเติม" ได้ แต่ต้องไม่ขัดกับข้อมูล
+1. ตอบเฉพาะข้อมูลที่มีใน [DATA] เท่านั้น ห้ามสร้างข้อมูลใหม่
+2. ตอบเป็นภาษาไทยเสมอ ยกเว้นชื่อวิทยาศาสตร์
+3. หากถามเรื่องสุขภาพหรืออาการป่วย ให้แนะนำพบสัตวแพทย์ exotic
+4. ตอบกระชับ ตรงประเด็น เป็นมิตร ใช้ emoji ประกอบ
+5. จดจำบริบทการสนทนาได้จาก history"""
 
-รูปแบบการตอบ (สำคัญมาก):
-ถ้ามีการแนะนำสัตว์ ให้ตอบเป็นหัวข้อดังนี้:
 
-1. 🐾 ชื่อสัตว์
-- ชื่อไทย / อังกฤษ
+# ══════════════════════════════════════════════════════════════════════
+#  SLIDING WINDOW  —  ตัด history เหลือ MEMORY_TURNS turns ล่าสุด
+# ══════════════════════════════════════════════════════════════════════
+def _apply_memory_window(history: list, n_turns: int = MEMORY_TURNS) -> list:
+    """
+    รับ history ทั้งหมด คืน sliding window n_turns turns ล่าสุด
+    1 turn = 1 user + 1 model message = 2 items
+    
+    ตัวอย่าง n_turns=5:
+      history มี 20 messages → คืน 10 messages (5 turn ล่าสุด)
+      history มี 4 messages  → คืน 4 messages (ทั้งหมด ไม่ตัด)
+    """
+    max_messages = n_turns * 2   # 5 turns × 2 = 10 messages
+    if len(history) <= max_messages:
+        return history
+    
+    windowed = history[-max_messages:]
+    
+    # ตรวจให้แน่ใจว่า message แรกใน window เป็น role=user เสมอ
+    # (ป้องกัน conversation เริ่มด้วย model)
+    while windowed and windowed[0].get("role") != "user":
+        windowed = windowed[1:]
+    
+    print(f"[chatbot] Memory window: {len(history)} → {len(windowed)} messages ({n_turns} turns)")
+    return windowed
 
-2. ⭐ ระดับการเลี้ยง
-- easy / medium / hard (จากข้อมูล)
 
-3. 🍽️ อาหาร
-- กินอะไรเป็นหลัก
-- ความถี่โดยประมาณ
-
-4. 🏠 ที่อยู่อาศัย
-- ต้องใช้กรง/ตู้แบบไหน
-- ขนาดคร่าวๆ
-
-5. 🌡️ สภาพแวดล้อม
-- อุณหภูมิ / ความชื้น (ถ้ามีข้อมูล)
-- สิ่งที่ต้องมี เช่น ที่หลบ / วัสดุรองพื้น
-
-6. 🧼 การดูแล
-- ต้องทำอะไรบ้าง เช่น ทำความสะอาด / ให้อาหาร
-
-7. ⚠️ ข้อควรรู้
-- ข้อดี/ข้อจำกัด
-- เหมาะกับมือใหม่หรือไม่
-
-ข้อกำหนด:
-- ถ้าไม่มีข้อมูลบางหัวข้อ → ข้ามได้
-- ห้ามเดาข้อมูลที่ไม่มี
-- ตอบภาษาไทย กระชับ อ่านง่าย
-- ใช้ emoji ช่วยให้อ่านง่าย
-"""
-
-# ─────────────────────────────────────────────
-# Follow-up detection
-# ─────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════
+#  FOLLOW-UP DETECTION + SPECIES ENRICHMENT
+# ══════════════════════════════════════════════════════════════════════
 FOLLOWUP_PATTERNS = [
     r"^(แล้ว|ถ้า|แบบ|แต่|และ|หรือ|อีก)",
     r"(มั้ย|ไหม|หน่อย)$",
 ]
 
-def _is_followup(text, history):
-    if not history:
-        return False
+def _is_followup(text: str, history: list) -> bool:
+    if not history: return False
     t = text.strip().lower()
-    if len(t) < 20:
-        return True
+    if len(t) < 20: return True
     return any(re.search(p, t) for p in FOLLOWUP_PATTERNS)
 
-# ─────────────────────────────────────────────
-# Extract last species
-# ─────────────────────────────────────────────
-def extract_last_species(history):
+
+def _extract_last_species(history: list) -> str:
     rows = _get_rows()
     for msg in reversed(history):
         for part in msg.get("parts", []):
@@ -342,116 +111,138 @@ def extract_last_species(history):
                     return name_en
     return ""
 
-# ─────────────────────────────────────────────
-# Build Gemini contents
-# ─────────────────────────────────────────────
-def _build_contents(history, context, user_input):
+
+# ══════════════════════════════════════════════════════════════════════
+#  BUILD GEMINI CONTENTS
+# ══════════════════════════════════════════════════════════════════════
+def _build_contents(history: list, context: str, user_input: str) -> list:
+    """
+    สร้าง contents array สำหรับ Gemini multi-turn
+    - turn แรก: แนบ system + context
+    - turn ต่อๆไป: history (windowed) + context ใหม่ + คำถาม
+    """
     contents = []
 
     if not history:
-        system_text = BASE_SYSTEM
+        # === Turn แรกของ session ===
+        system_block = BASE_SYSTEM
         if context:
-            system_text += f"\n\n[DATA]\n{context}"
-
+            system_block += f"\n\n[DATA]\n{context}"
         contents.append({
-            "role": "user",
-            "parts": [{"text": f"[SYSTEM]\n{system_text}\n\n[USER]\n{user_input}"}]
+            "role":  "user",
+            "parts": [{"text": f"[SYSTEM]\n{system_block}\n\n[USER]\n{user_input}"}]
         })
     else:
+        # === Turn ต่อๆ ไป: ส่ง windowed history ===
         contents.extend(history)
 
+        # แนบ context ใหม่ถ้ามี (RAG retrieve ตาม query ปัจจุบัน)
         if context:
             user_text = f"[DATA]\n{context}\n\n[QUESTION]\n{user_input}"
         else:
             user_text = user_input
 
         contents.append({
-            "role": "user",
+            "role":  "user",
             "parts": [{"text": user_text}]
         })
 
     return contents
 
-# ─────────────────────────────────────────────
-# Gemini call (กัน 503)
-# ─────────────────────────────────────────────
-def call_gemini(contents):
+
+# ══════════════════════════════════════════════════════════════════════
+#  GEMINI CALL (retry 3x)
+# ══════════════════════════════════════════════════════════════════════
+def _call_gemini(contents: list) -> str:
     for attempt in range(3):
         try:
-            print(f"[AI] attempt {attempt+1}")
-
-            res = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=contents,
-            )
-
+            res = client.models.generate_content(model=GPT_MODEL, contents=contents)
             if res.text:
                 return res.text
-
         except Exception as e:
-            print("[ERROR]", e)
+            print(f"[chatbot] Gemini attempt {attempt+1} failed: {e}")
             time.sleep(1)
+    return "ขออภัย ระบบกำลังมีปัญหา กรุณาลองใหม่อีกครั้ง"
 
-    return "ขออภัย ระบบกำลังมีผู้ใช้งานจำนวนมาก กรุณาลองใหม่อีกครั้ง"
 
-# ─────────────────────────────────────────────
-# Main chatbot
-# ─────────────────────────────────────────────
-def ask_chatbot(user_input, history=None):
+# ══════════════════════════════════════════════════════════════════════
+#  MAIN
+# ══════════════════════════════════════════════════════════════════════
+def ask_chatbot(user_input: str, history: list = None) -> dict:
+    """
+    Args:
+      user_input : คำถามปัจจุบัน
+      history    : full conversation history จาก frontend
+                   format: [{"role": "user"/"model", "parts": [{"text": "..."}]}]
+    Returns:
+      reply      : str
+      sources    : list
+      mode       : str
+    """
     if history is None:
         history = []
 
     try:
-        rows = _get_rows()
+        rows    = _get_rows()
         context = ""
         sources = []
-        mode = "vector" if _use_vector else "tfidf"
+        mode    = "vector" if _use_vector else "tfidf"
 
-        # ── Follow-up ─────────────────────
-        if _is_followup(user_input, history):
-            last = extract_last_species(history)
-            if last:
-                user_input = f"{user_input} {last}"
+        # ── Step 1: Apply sliding window (5 turns) ─────────────────────
+        windowed_history = _apply_memory_window(history, MEMORY_TURNS)
 
-        # ── Filter ────────────────────────
-        intent = detect_intent(user_input)
+        # ── Step 2: Enrich short follow-up queries ──────────────────────
+        enriched_input = user_input
+        if _is_followup(user_input, windowed_history):
+            last_species = _extract_last_species(windowed_history)
+            if last_species:
+                enriched_input = f"{user_input} {last_species}"
+                print(f"[chatbot] Follow-up enriched: '{user_input}' → '{enriched_input}'")
+
+        # ── Step 3: Filter path (categorical queries) ────────────────────
+        intent = detect_intent(enriched_input)
         if intent:
             filtered = apply_filter(rows, intent["filters"])
             filtered = sort_rows(filtered, intent.get("sort_by", ""))
-
             if filtered:
                 context = build_filter_context(filtered, intent, max_rows=20)
-                sources = filtered[:5]
+                sources = [{
+                    "id":      r.get("id"),
+                    "name_en": r.get("common_name_en"),
+                    "name_th": r.get("common_name_th"),
+                    "care":    r.get("care_level"),
+                    "danger":  r.get("danger_level"),
+                } for r in filtered[:10]]
                 mode = "filter"
 
-        # ── RAG ─────────────────────────
+        # ── Step 4: RAG path (specific species) ─────────────────────────
         if not context:
-            context, sources, has_data = build_context(user_input, top_k=3)
-            mode = "vector_rag" if _use_vector else "tfidf_rag"
+            context, sources, has_data = build_context(enriched_input, top_k=3)
+            mode = ("vector_rag" if _use_vector else "tfidf_rag") if has_data else "rag_empty"
 
-        # 🔥 GUARD: ไม่มีข้อมูล → ไม่เรียก AI
+        # ── Step 5: Guard — ถ้าไม่มีข้อมูลเลย ──────────────────────────
         if not context:
             return {
-                "reply": "ขออภัย ไม่พบข้อมูลในฐานข้อมูลครับ",
+                "reply":   "ขออภัยครับ ไม่พบข้อมูลในฐานข้อมูลของเรา กรุณาถามเกี่ยวกับสัตว์ exotic ที่รองรับ",
                 "sources": [],
-                "mode": "no_data",
+                "mode":    "no_data",
             }
 
-        # ── Call AI ─────────────────────
-        contents = _build_contents(history, context, user_input)
-        reply = call_gemini(contents)
+        # ── Step 6: Build contents + Call Gemini ─────────────────────────
+        contents = _build_contents(windowed_history, context, user_input)
+        reply    = _call_gemini(contents)
 
         return {
-            "reply": reply,
+            "reply":   reply,
             "sources": sources,
-            "mode": mode,
+            "mode":    mode,
         }
 
     except Exception as e:
-        print("[chatbot ERROR]", e)
+        print(f"[chatbot] ERROR: {e}")
+        import traceback; traceback.print_exc()
         return {
-            "reply": "ระบบมีปัญหา กรุณาลองใหม่",
+            "reply":   "ระบบมีปัญหา กรุณาลองใหม่ครับ",
             "sources": [],
-            "mode": "error",
+            "mode":    "error",
         }
-
