@@ -432,13 +432,13 @@ function saveLocalSessions(sessions) {
 }
 
 const CHIP_PROMPTS = [
-  'สัตว์ exotic ที่เลี้ยงได้โดยไม่ต้องมีใบอนุญาต',
-  'Leopard Gecko',
-  'Tarantula ชนิดแนะนำ',
-  'Ball Python กฎหมายไทย',
-  'Axolotl การดูแล',
-  'กฎหมาย CITES ในไทย',
-  'สัตว์เลื้อยคลานเหมาะกับมือใหม่',
+  // 'สัตว์ exotic ที่เลี้ยงได้โดยไม่ต้องมีใบอนุญาต',
+  // 'Leopard Gecko',
+  // 'Tarantula ชนิดแนะนำ',
+  // 'Ball Python กฎหมายไทย',
+  // 'Axolotl การดูแล',
+  // 'กฎหมาย CITES ในไทย',
+  // 'สัตว์เลื้อยคลานเหมาะกับมือใหม่',
 ];
 
 export default function App() {
@@ -706,14 +706,7 @@ export default function App() {
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
-          <div className="logo-ring">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M9 9h.01M15 9h.01"/>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-            </svg>
-          </div>
+          
           <div className="topbar-title">
             <h1>ExoticMate</h1>
             <p>Exotic Animal Knowledge Assistant</p>
@@ -768,12 +761,12 @@ export default function App() {
               </svg>
             </button>
           </div>
-          <p className="input-note">
+          {/* <p className="input-note">
             {user
               ? `บันทึกประวัติการสนทนาแล้ว • ${user.username}`
               : 'เข้าสู่ระบบเพื่อบันทึกประวัติการสนทนา'
             }
-          </p>
+          </p> */}
         </div>
       </div>
 
