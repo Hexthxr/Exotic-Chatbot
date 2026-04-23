@@ -1,165 +1,202 @@
 #!/usr/bin/env python3
 """
-Build_vector_db.py  —  Rebuild ChromaDB Vector Database (v3)
-═══════════════════════════════════════════════════════════════
-Input  : data/processed/clean.json  (275 species + chunk_text)
-Output : data/vector_db/            (ChromaDB persistent)
+Build_vector_db.py  —  Rebuild ChromaDB Vector Database (LangChain v4)
+═══════════════════════════════════════════════════════════════════════
+การเปลี่ยนแปลงจาก v3:
+  - Embedding  : sentence-transformers → OpenAIEmbeddings (text-embedding-3-small)
+  - Chunking   : 1 species = 1 doc (เหมือนเดิม แต่ embed ด้วย OpenAI)
+  - VectorStore: chromadb raw API → LangChain Chroma wrapper
+  - Metadata   : เพิ่ม species_id เพื่อ lookup กลับไปหา full row ใน id_to_row.json
 
-Model  : paraphrase-multilingual-MiniLM-L12-v2  (~400MB, download once)
-Dim    : 384 (multilingual Thai+EN support)
+Input  : data/processed/clean.json
+Output : data/vector_db/  (ChromaDB persistent — LangChain format)
 
 Install:
-  pip install chromadb sentence-transformers
+  pip install langchain langchain-openai langchain-chroma chromadb python-dotenv
 
-Run once:
+Run:
   python scripts/Build_vector_db.py
 """
 
-import json, time
+import os, json, time
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE       = Path(__file__).parent.parent / "data"
 CLEAN_F    = BASE / "processed" / "clean.json"
 VECTOR_DIR = BASE / "vector_db"
-VECTOR_DIR.mkdir(parents=True, exist_ok=True)
+ID_MAP_F   = BASE / "processed" / "id_to_row.json"
 
-MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
-
-try:
-    import chromadb
-    from sentence_transformers import SentenceTransformer
-except ImportError as e:
-    print(f"\n❌ Missing package: {e}")
-    print("   pip install chromadb sentence-transformers\n")
+# ── Validate env ────────────────────────────────────────────────────────
+if not os.getenv("OPENAI_API_KEY"):
+    print("\n❌ OPENAI_API_KEY ไม่พบใน .env")
+    print("   กรุณาเพิ่ม OPENAI_API_KEY=sk-... ใน Backend/.env\n")
     raise SystemExit(1)
 
-# 1. Load data
-print("▶ Loading clean.json …")
+try:
+    from langchain_openai import OpenAIEmbeddings
+    from langchain_chroma import Chroma
+    from langchain_core.documents import Document
+except ImportError as e:
+    print(f"\n❌ Missing package: {e}")
+    print("   pip install langchain langchain-openai langchain-chroma chromadb\n")
+    raise SystemExit(1)
+
+# ══════════════════════════════════════════════════════════════════════
+#  Step 1: Load clean.json
+# ══════════════════════════════════════════════════════════════════════
+print("▶ Loading clean.json ...")
 with open(CLEAN_F, encoding="utf-8") as f:
     data = json.load(f)
 rows = data["rows"]
-print(f"  Loaded {len(rows)} chunks")
+print(f"  Loaded {len(rows)} species")
 
-# 2. Load embedding model
-print(f"\n▶ Loading embedding model: {MODEL_NAME}")
-print("  (ครั้งแรกจะ download ~400MB — รอสักครู่)")
-model = SentenceTransformer(MODEL_NAME)
-print(f"  Model loaded ✓  dim={model.get_sentence_embedding_dimension()}")
+# ══════════════════════════════════════════════════════════════════════
+#  Step 2: Build LangChain Documents
+#  page_content = chunk_text (structured markdown ต่อ species)
+#  metadata     = fields สำคัญสำหรับ filter + lookup
+# ══════════════════════════════════════════════════════════════════════
+print("\n▶ Building LangChain Documents ...")
 
-# 3. Build embed text per chunk
-# ใช้ chunk_text ทั้งหมด → semantic search ครบทุก field
 def build_embed_text(r: dict) -> str:
     """
-    ใช้ chunk_text (structured) เป็น embed text หลัก
-    เพิ่มชื่อซ้ำเพื่อเพิ่มน้ำหนักชื่อสัตว์ใน vector space
+    ข้อความสำหรับ embed:
+    ซ้ำชื่อสัตว์ที่หัวเพื่อเพิ่มน้ำหนัก → ค้นหาชื่อได้แม่นขึ้น
+    ตามด้วย chunk_text ที่มีข้อมูลครบทุก field
     """
     name_boost = " ".join([
         r.get("common_name_th", ""),
-        r.get("common_name_th", ""),     # repeat
+        r.get("common_name_th", ""),   # repeat x2
         r.get("common_name_en", ""),
         r.get("common_name_en", ""),
         r.get("scientific_name", ""),
     ])
-    # ใช้ chunk_text ซึ่งมีทุก field แล้ว
-    chunk = r.get("chunk_text", "")
-    return f"{name_boost}\n\n{chunk}"
+    return f"{name_boost}\n\n{r.get('chunk_text', '')}"
 
-texts     = [build_embed_text(r) for r in rows]
-ids       = [r["id"] for r in rows]
-metadatas = [
-    {
-        "category":          r.get("category", ""),
-        "subcategory":       r.get("subcategory", ""),
-        "common_name_en":    r.get("common_name_en", ""),
-        "common_name_th":    r.get("common_name_th", ""),
-        "scientific_name":   r.get("scientific_name", ""),
-        "care_level":        r.get("care_level", ""),
-        "danger_level":      r.get("danger_level", ""),
-        "venomous_or_toxic": r.get("venomous_or_toxic", ""),
-        "beginner_friendly": r.get("beginner_friendly", ""),
-        "diet":              r.get("diet", ""),
-        "origin_region":     r.get("origin_region", ""),
-        # ใหม่: legal bucket สำหรับ filter
-        "legal_bucket":      r.get("legal_species_bucket_v6", ""),
-        "illegal_flag":      r.get("illegal_clear_flag_th", ""),
-    }
-    for r in rows
-]
+docs = []
+for r in rows:
+    doc = Document(
+        page_content=build_embed_text(r),
+        metadata={
+            # ── lookup key ──────────────────────────────────────
+            "species_id":        r.get("id", ""),
+            # ── filter fields ───────────────────────────────────
+            "category":          r.get("category", ""),
+            "subcategory":       r.get("subcategory", ""),
+            "care_level":        r.get("care_level", ""),
+            "danger_level":      r.get("danger_level", ""),
+            "beginner_friendly": r.get("beginner_friendly", ""),
+            "venomous_or_toxic": r.get("venomous_or_toxic", ""),
+            "legal_bucket":      r.get("legal_species_bucket_v6", ""),
+            "illegal_flag":      r.get("illegal_clear_flag_th", ""),
+            # ── display fields ──────────────────────────────────
+            "common_name_en":    r.get("common_name_en", ""),
+            "common_name_th":    r.get("common_name_th", ""),
+            "scientific_name":   r.get("scientific_name", ""),
+        },
+    )
+    docs.append(doc)
 
-print(f"\n  Sample embed text ({rows[0]['common_name_en']}):")
-print(f"  {texts[0][:120]}…\n")
+print(f"  Built {len(docs)} documents")
+print(f"\n  Sample doc ({rows[0]['common_name_en']}):")
+print(f"  page_content[:150]: {docs[0].page_content[:150]}...")
+print(f"  metadata keys: {list(docs[0].metadata.keys())}")
 
-# 4. Generate embeddings
-BATCH = 32
-print(f"▶ Embedding {len(texts)} chunks (batch={BATCH}) …")
-t0 = time.time()
-embeddings = []
-for i in range(0, len(texts), BATCH):
-    batch = texts[i:i+BATCH]
-    vecs  = model.encode(batch, show_progress_bar=False, normalize_embeddings=True)
-    embeddings.extend(vecs.tolist())
-    done = min(i+BATCH, len(texts))
-    print(f"  [{done:>3}/{len(texts)}] {done/len(texts)*100:.0f}%", end="\r")
-print(f"\n  Embedding done in {time.time()-t0:.1f}s ✓  dim={len(embeddings[0])}")
+# ══════════════════════════════════════════════════════════════════════
+#  Step 3: Embed + Store ใน ChromaDB ผ่าน LangChain
+# ══════════════════════════════════════════════════════════════════════
+print("\n▶ Initializing OpenAIEmbeddings (text-embedding-3-small) ...")
+print("  (แต่ละ species จะถูก embed ผ่าน OpenAI API — ใช้เวลาสักครู่)")
 
-# 5. Build ChromaDB
-print(f"\n▶ Building ChromaDB at: {VECTOR_DIR}")
-client = chromadb.PersistentClient(path=str(VECTOR_DIR))
-
-# ลบ collection เก่า → rebuild สะอาด
-try:
-    client.delete_collection("exotic_pets")
-    print("  (ลบ collection เก่า → rebuild ใหม่)")
-except Exception:
-    pass
-
-collection = client.create_collection(
-    name="exotic_pets",
-    metadata={"hnsw:space": "cosine"},
+embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    openai_api_key=os.getenv("OPENAI_API_KEY"),
 )
 
-CHROMA_BATCH = 50
-for i in range(0, len(ids), CHROMA_BATCH):
-    sl = slice(i, i+CHROMA_BATCH)
-    collection.add(
-        ids=ids[sl],
-        embeddings=embeddings[sl],
-        documents=texts[sl],
-        metadatas=metadatas[sl],
-    )
+# ลบ Vector DB เก่าออกก่อน rebuild สะอาด
+if VECTOR_DIR.exists():
+    import shutil
+    shutil.rmtree(VECTOR_DIR)
+    print(f"  (ลบ vector_db เก่า → rebuild ใหม่)")
+VECTOR_DIR.mkdir(parents=True, exist_ok=True)
 
-print(f"  Indexed {collection.count()} documents ✓")
+# Embed + index ทั้งหมดผ่าน LangChain (batch อัตโนมัติ)
+print(f"\n▶ Embedding + Indexing {len(docs)} documents ...")
+print("  OpenAI text-embedding-3-small: ~1500 tokens/doc, batch=100")
+t0 = time.time()
 
-# 6. Sanity test
-print("\n▶ Sanity retrieval test …")
+BATCH = 50   # ส่ง OpenAI API ทีละ 50 docs เพื่อหลีกเลี่ยง rate limit
+vectorstore = None
+for i in range(0, len(docs), BATCH):
+    batch = docs[i:i+BATCH]
+    done  = min(i + BATCH, len(docs))
+    print(f"  [{done:>3}/{len(docs)}] embedding batch {i//BATCH + 1} ...", end="\r")
+
+    if vectorstore is None:
+        vectorstore = Chroma.from_documents(
+            documents=batch,
+            embedding=embeddings,
+            collection_name="exotic_pets",
+            persist_directory=str(VECTOR_DIR),
+        )
+    else:
+        vectorstore.add_documents(batch)
+
+    time.sleep(0.3)   # หลีกเลี่ยง rate limit
+
+print(f"\n  Done in {time.time()-t0:.1f}s")
+print(f"  Indexed: {vectorstore._collection.count()} documents ✓")
+
+# ══════════════════════════════════════════════════════════════════════
+#  Step 4: Save id_to_row.json (lookup map สำหรับ vector_rag.py)
+# ══════════════════════════════════════════════════════════════════════
+print("\n▶ Saving id_to_row.json ...")
+id_map = {r["id"]: r for r in rows}
+with open(ID_MAP_F, "w", encoding="utf-8") as f:
+    json.dump(id_map, f, ensure_ascii=False)
+print(f"  Saved {len(id_map)} entries → {ID_MAP_F.name}")
+
+# ══════════════════════════════════════════════════════════════════════
+#  Step 5: Sanity Test — MMR retrieval
+# ══════════════════════════════════════════════════════════════════════
+print("\n▶ Sanity test (MMR retrieval) ...")
+
+retriever = vectorstore.as_retriever(
+    search_type="mmr",
+    search_kwargs={"k": 3, "fetch_k": 10, "lambda_mult": 0.7},
+)
+
 test_queries = [
     "บอลไพธอนเลี้ยงยากไหม",
     "gecko for beginners",
     "แมงมุมทารันทูล่า",
     "axolotl ราคาเท่าไหร่",
     "นกเลี้ยงง่าย",
+    "สัตว์มีพิษที่เลี้ยงได้",
 ]
+
 for q in test_queries:
-    q_vec = model.encode(q, normalize_embeddings=True).tolist()
-    res   = collection.query(query_embeddings=[q_vec], n_results=2)
-    names = [f"{m['common_name_th']} ({m['common_name_en']})"
-             for m in res["metadatas"][0]]
-    print(f"  '{q}' → {names}")
+    results = retriever.invoke(q)
+    names = [
+        f"{d.metadata.get('common_name_th', '?')} ({d.metadata.get('common_name_en', '?')})"
+        for d in results
+    ]
+    print(f"  '{q}'")
+    print(f"    → {names}\n")
 
-# 7. Save id_to_row mapping
-id_map_path = BASE / "processed" / "id_to_row.json"
-id_map = {r["id"]: r for r in rows}
-with open(id_map_path, "w", encoding="utf-8") as f:
-    json.dump(id_map, f, ensure_ascii=False)
-
-print(f"\n  id_to_row.json saved ({len(id_map)} entries)")
-print("\n" + "="*55)
-print("  VECTOR DB BUILD COMPLETE")
-print("="*55)
-print(f"  Collection  : exotic_pets")
-print(f"  Documents   : {collection.count()}")
-print(f"  Model       : {MODEL_NAME}")
-print(f"  DB path     : {VECTOR_DIR}")
-print(f"  id_to_row   : {id_map_path.name}")
-print("="*55)
-print("\n✅ Vector DB พร้อมใช้งาน — vector_rag.py จะโหลดอัตโนมัติ\n")
+# ══════════════════════════════════════════════════════════════════════
+#  Summary
+# ══════════════════════════════════════════════════════════════════════
+print("=" * 60)
+print("  VECTOR DB BUILD COMPLETE (LangChain v4)")
+print("=" * 60)
+print(f"  Collection    : exotic_pets")
+print(f"  Documents     : {vectorstore._collection.count()}")
+print(f"  Embedding     : text-embedding-3-small (OpenAI)")
+print(f"  Retriever     : MMR (k=3, fetch_k=10, lambda=0.7)")
+print(f"  DB path       : {VECTOR_DIR}")
+print(f"  id_to_row.json: {ID_MAP_F.name}")
+print("=" * 60)
+print("\n✅ Vector DB พร้อมใช้งาน — เริ่ม Flask server ได้เลย\n")

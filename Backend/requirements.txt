@@ -4,11 +4,13 @@ pymongo
 python-dotenv
 flask-bcrypt
 flask-jwt-extended
-google-genai
-google-generativeai
+openai
+langchain
+langchain-openai
+langchain-chroma
+chromadb
 numpy
 pandas
-scikit-learn
 scikit-learn
 pymongo
 bcrypt

@@ -1,43 +1,107 @@
 {
   "metrics": {
-    "n": 55,
+    "n": 56,
     "top1_acc": 1.0,
     "top3_acc": 1.0,
     "mrr": 1.0
   },
   "per_category": {
-    "Invertebrate": {
+    "Bird": {
       "acc": 1.0,
-      "hit1": 3,
-      "total": 3
+      "hit1": 9,
+      "total": 9
     },
-    "Aquatic": {
+    "Reptile": {
       "acc": 1.0,
-      "hit1": 10,
-      "total": 10
+      "hit1": 19,
+      "total": 19
     },
     "Amphibian": {
       "acc": 1.0,
       "hit1": 6,
       "total": 6
     },
-    "Mammal": {
-      "acc": 1.0,
-      "hit1": 8,
-      "total": 8
-    },
-    "Bird": {
+    "Aquatic": {
       "acc": 1.0,
       "hit1": 10,
       "total": 10
     },
-    "Reptile": {
+    "Invertebrate": {
       "acc": 1.0,
-      "hit1": 18,
-      "total": 18
+      "hit1": 3,
+      "total": 3
+    },
+    "Mammal": {
+      "acc": 1.0,
+      "hit1": 9,
+      "total": 9
     }
   },
   "details": [
+    {
+      "id": "EXO102",
+      "name": "Zebra Finch",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO032",
+      "name": "Panther Chameleon",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO012",
+      "name": "Green Tree Python",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO147",
+      "name": "Knob-tailed Gecko",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO054",
+      "name": "Tomato Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO240",
+      "name": "Severum",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO105",
+      "name": "Toco Toucan",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO044",
+      "name": "Chinese Softshell Turtle",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
     {
       "id": "EXO261",
       "name": "Mexican Red-knee Tarantula",
@@ -55,56 +119,8 @@
       "rr": 1.0
     },
     {
-      "id": "EXO185",
-      "name": "Strawberry Poison Dart Frog",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO076",
-      "name": "Meerkat",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO231",
-      "name": "Major Mitchell's Cockatoo",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO100",
-      "name": "Senegal Parrot",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO162",
-      "name": "Mali Uromastyx",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO240",
-      "name": "Severum",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO277",
-      "name": "Mexican Redleg Tarantula",
+      "id": "EXO186",
+      "name": "Imitator Poison Frog",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -119,40 +135,48 @@
       "rr": 1.0
     },
     {
-      "id": "EXO024",
-      "name": "African Fat-tailed Gecko",
+      "id": "EXO172",
+      "name": "Razor-backed Musk Turtle",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO032",
-      "name": "Panther Chameleon",
+      "id": "EXO100",
+      "name": "Senegal Parrot",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO186",
-      "name": "Imitator Poison Frog",
+      "id": "EXO166",
+      "name": "Elongated Tortoise",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO039",
-      "name": "Red-footed Tortoise",
+      "id": "EXO002",
+      "name": "Reticulated Python",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO144",
-      "name": "Rough Green Snake",
+      "id": "EXO263",
+      "name": "Brazilian Black Tarantula",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO278",
+      "name": "Capybara",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -167,16 +191,16 @@
       "rr": 1.0
     },
     {
-      "id": "EXO102",
-      "name": "Zebra Finch",
+      "id": "EXO214",
+      "name": "Jenday Conure",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO141",
-      "name": "Stimson's Python",
+      "id": "EXO144",
+      "name": "Rough Green Snake",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -199,8 +223,48 @@
       "rr": 1.0
     },
     {
-      "id": "EXO194",
-      "name": "Paddletail Newt",
+      "id": "EXO185",
+      "name": "Strawberry Poison Dart Frog",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO001",
+      "name": "Ball Python",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO209",
+      "name": "Lesser Hedgehog Tenrec",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO063",
+      "name": "Fancy Rat",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO231",
+      "name": "Major Mitchell's Cockatoo",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
+      "id": "EXO099",
+      "name": "Black-headed Caique",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -215,22 +279,6 @@
       "rr": 1.0
     },
     {
-      "id": "EXO202",
-      "name": "Gambian Pouched Rat",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO172",
-      "name": "Razor-backed Musk Turtle",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
       "id": "EXO092",
       "name": "Lovebird",
       "rank": 1,
@@ -239,16 +287,8 @@
       "rr": 1.0
     },
     {
-      "id": "EXO044",
-      "name": "Chinese Softshell Turtle",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO098",
-      "name": "Indian Ringneck",
+      "id": "EXO024",
+      "name": "African Fat-tailed Gecko",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -257,38 +297,6 @@
     {
       "id": "EXO109",
       "name": "Discus",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO147",
-      "name": "Knob-tailed Gecko",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO215",
-      "name": "Nanday Parakeet",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO105",
-      "name": "Toco Toucan",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO204",
-      "name": "Serval",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -311,8 +319,8 @@
       "rr": 1.0
     },
     {
-      "id": "EXO212",
-      "name": "Senegal Bushbaby",
+      "id": "EXO211",
+      "name": "Common Genet",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -359,32 +367,32 @@
       "rr": 1.0
     },
     {
-      "id": "EXO099",
-      "name": "Black-headed Caique",
+      "id": "EXO277",
+      "name": "Mexican Redleg Tarantula",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO217",
-      "name": "Crimson Rosella",
+      "id": "EXO215",
+      "name": "Nanday Parakeet",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO214",
-      "name": "Jenday Conure",
+      "id": "EXO098",
+      "name": "Indian Ringneck",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO211",
-      "name": "Common Genet",
+      "id": "EXO204",
+      "name": "Serval",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -399,16 +407,16 @@
       "rr": 1.0
     },
     {
-      "id": "EXO012",
-      "name": "Green Tree Python",
+      "id": "EXO039",
+      "name": "Red-footed Tortoise",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO084",
-      "name": "Kinkajou",
+      "id": "EXO202",
+      "name": "Gambian Pouched Rat",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -431,16 +439,8 @@
       "rr": 1.0
     },
     {
-      "id": "EXO263",
-      "name": "Brazilian Black Tarantula",
-      "rank": 1,
-      "hit@1": true,
-      "hit@3": true,
-      "rr": 1.0
-    },
-    {
-      "id": "EXO002",
-      "name": "Reticulated Python",
+      "id": "EXO084",
+      "name": "Kinkajou",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
@@ -455,6 +455,14 @@
       "rr": 1.0
     },
     {
+      "id": "EXO141",
+      "name": "Stimson's Python",
+      "rank": 1,
+      "hit@1": true,
+      "hit@3": true,
+      "rr": 1.0
+    },
+    {
       "id": "EXO249",
       "name": "Red Hook Silver Dollar",
       "rank": 1,
@@ -463,16 +471,16 @@
       "rr": 1.0
     },
     {
-      "id": "EXO166",
-      "name": "Elongated Tortoise",
+      "id": "EXO162",
+      "name": "Mali Uromastyx",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
       "rr": 1.0
     },
     {
-      "id": "EXO063",
-      "name": "Fancy Rat",
+      "id": "EXO279",
+      "name": "Binturong",
       "rank": 1,
       "hit@1": true,
       "hit@3": true,
