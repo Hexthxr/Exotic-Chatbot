@@ -3,10 +3,10 @@ import capybaraImg from '../img/capybara.png';
 
 const QUICK_PROMPTS = [
   'Leopard Gecko ดูแลยังไงสำหรับมือใหม่',
-  'Ball Python เลี้ยงได้ในไทยไหม ต้องมีใบอนุญาตไหม',
+  // 'Ball Python เลี้ยงได้ในไทยไหม ต้องมีใบอนุญาตไหม',
   'Axolotl ต้องการสภาพแวดล้อมแบบไหน',
   'Tarantula ชนิดไหนเหมาะสำหรับผู้เริ่มต้น',
-  'กฎหมายสัตว์ exotic ในประเทศไทย',
+  // 'กฎหมายสัตว์ exotic ในประเทศไทย',
   'Chameleon เลี้ยงยากแค่ไหน',
 ];
 
@@ -36,7 +36,7 @@ export default function WelcomeScreen({ onQuickSend }) {
 
       <h2>ExoticMate</h2>
 
-      <span className="welcome-tagline">Exotic Animal Knowledge Assistant</span>
+      {/* <span className="welcome-tagline">Exotic Animal Knowledge Assistant</span> */}
 
       <p>
         ให้ความรู้เรื่องสัตว์ exotic ครบจบที่เดียว<br/>

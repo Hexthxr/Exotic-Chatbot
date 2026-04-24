@@ -585,14 +585,15 @@ export default function App() {
 
       // คำนวณ history จาก messages ณ ขณะที่ส่ง (ก่อนเพิ่ม user message ใหม่)
       // ใช้ messages (ไม่ใช่ nextMessages) เพื่อให้ bot reply ก่อนหน้าถูกส่งไปด้วย
-      const geminiHistory = messages.map(m => ({
-        role:  m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
+      // ใช้ OpenAI format: {role: "user"/"assistant", content: "..."}
+      const openaiHistory = messages.map(m => ({
+        role:    m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
       }));
 
       const body = {
         message:    text,
-        history:    geminiHistory,
+        history:    openaiHistory,
         session_id: (user && token) ? currentId : undefined,
       };
 
@@ -714,7 +715,7 @@ export default function App() {
 
           {/* Auth button in topbar */}
           
-          <span className="badge-online"><i/>Online</span>
+          {/* <span className="badge-online"><i/>Online</span> */}
         </header>
 
         {/* Chips */}

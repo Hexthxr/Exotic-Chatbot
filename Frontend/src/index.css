@@ -812,26 +812,106 @@ body::before {
 }
 
 .welcome-mark {
-  /* width: 180px; */
-  height: 180px;
+  width: clamp(56px, 16vw, 130px);
+  height: clamp(56px, 16vw, 130px);
+  aspect-ratio: 1 / 1;
+
   background:
     linear-gradient(145deg, rgba(16,200,118,0.9), rgba(26,122,74,0.8)),
     linear-gradient(135deg, rgba(212,175,55,0.3), rgba(255,107,53,0.2));
+
   backdrop-filter: blur(12px);
-  border-radius: 50px;
+  -webkit-backdrop-filter: blur(12px);
+
+  border-radius: clamp(16px, 4vw, 32px);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32px;
+
+  margin-bottom: clamp(12px, 2.5vw, 22px);
+
   color: #fff;
+
   box-shadow:
-    0 32px 64px rgba(16,200,118,0.35),
-    0 0 0 12px rgba(16,200,118,0.15),
+    0 clamp(10px, 2.5vw, 18px) clamp(20px, 5vw, 36px) rgba(16,200,118,0.32),
+    0 0 0 clamp(3px, 1vw, 7px) rgba(16,200,118,0.14),
     inset 0 1px 1px rgba(255,255,255,0.2);
+
   border: 2px solid rgba(255,255,255,0.3);
+
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
+
   animation: glowPulse 3s ease-in-out infinite;
+}
+
+.welcome-mark::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    45deg,
+    var(--exotic-gold),
+    var(--exotic-orange),
+    var(--exotic-bright-green),
+    var(--exotic-gold)
+  );
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.3;
+  animation: rotateGlow 6s linear infinite;
+}
+
+.welcome-mark svg {
+  width: clamp(22px, 5vw, 44px);
+  height: clamp(22px, 5vw, 44px);
+  transition: transform 0.3s ease;
+}
+
+.welcome-mark-image {
+  width: 66%;
+  height: auto;
+  max-width: 88px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+.welcome-mark:hover svg,
+.welcome-mark:hover .welcome-mark-image {
+  transform: scale(1.08) rotate(5deg);
+}
+
+/* มือถือ */
+@media (max-width: 600px) {
+  .welcome-mark {
+    width: clamp(54px, 22vw, 88px);
+    height: clamp(54px, 22vw, 88px);
+    border-radius: clamp(14px, 5vw, 24px);
+  }
+
+  .welcome-mark-image {
+    max-width: 54px;
+  }
+
+  .welcome-mark svg {
+    width: clamp(20px, 7vw, 34px);
+    height: clamp(20px, 7vw, 34px);
+  }
+}
+
+/* มือถือจอเล็ก */
+@media (max-width: 480px) {
+  .welcome-mark {
+    width: clamp(50px, 20vw, 76px);
+    height: clamp(50px, 20vw, 76px);
+    border-radius: clamp(13px, 5vw, 22px);
+  }
 }
 
 .welcome-mark::before {
@@ -861,12 +941,33 @@ body::before {
   transition: transform 0.3s ease;
 }
 
+
+
 .welcome-mark-image {
-  width: 140px;
-  height: 140px;
+  width: 70%;
+  height: auto;
+  max-width: 160px;
+  aspect-ratio: 1/1;
   border-radius: 50%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .welcome-mark {
+    width: 38vw;
+    height: 38vw;
+    min-width: 80px;
+    min-height: 80px;
+    max-width: 120px;
+    max-height: 120px;
+    aspect-ratio: 1/1;
+  }
+  .welcome-mark-image {
+    max-width: 80px;
+  }
 }
 
 .welcome-mark:hover svg,
@@ -1072,21 +1173,17 @@ body::before {
   position: relative;
 }
 
+
 .av.bot {
-  background: var(--exotic-gradient-secondary);
-  color: #fff;
-  border: 2px solid rgba(16,200,118,0.3);
+  background: transparent;
+  color: inherit;
+  border: none;
+  box-shadow: none;
 }
 
+
 .av.bot::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: var(--exotic-gradient-accent);
-  border-radius: 16px;
-  z-index: -1;
-  opacity: 0.3;
-  animation: avatarGlow 3s ease-in-out infinite;
+  content: none;
 }
 
 @keyframes avatarGlow {
@@ -1215,7 +1312,7 @@ body::before {
 
 /* ══ INPUT BAR ══ */
 .input-bar {
-  padding: 16px 24px 18px;
+  padding: 10px 24px 12px;
   background: rgba(232,245,240,0.4);
   border-top: 1.5px solid rgba(16,200,118,0.1);
   backdrop-filter: blur(16px);
@@ -1223,6 +1320,28 @@ body::before {
   flex-shrink: 0;
   position: relative;
   z-index: 2;
+}
+
+.input-wrap {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px 7px 22px;
+  border-radius: 999px;
+}
+
+.input-wrap textarea {
+  min-height: 22px;
+  line-height: 22px;
+  padding: 0;
+  margin: 0;
+}
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
 }
 
 .input-wrap {

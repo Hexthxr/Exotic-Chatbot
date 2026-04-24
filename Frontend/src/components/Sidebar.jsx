@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import capybaraImg from '../img/capybara.png';
 function timeLbl(iso) {
   const d = new Date(iso), now = new Date();
   const diff = Math.floor((now - d) / 86400000);
@@ -54,13 +54,9 @@ export default function Sidebar({
 
         <div className="sb-header">
           <div className="sb-logo">
-            <div className="sb-logo-mark">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                <path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4-4-1.79-4-4z"/>
-                <path d="M12 8V6M12 18v-2M8 12H6M18 12h-2"/>
-              </svg>
-            </div>
+             <div className="sb-logo-mark">
+                 <img src={capybaraImg} alt="ExoticMate Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '50%', display: 'block' }} />
+              </div>
             <span className="sb-logo-text">ExoticMate</span>
           </div>
           <button className="icon-btn" onClick={onToggle} title="ปิด sidebar">

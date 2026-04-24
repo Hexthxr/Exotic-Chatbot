@@ -1,4 +1,6 @@
+
 import React from 'react';
+import capybaraImg from '../img/capybara.png';
 
 function parseMarkdown(text) {
   return text
@@ -25,11 +27,7 @@ export default function ChatMessage({ role, content }) {
             <circle cx="12" cy="7" r="4"/>
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9 9h.01M15 9h.01"/>
-            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-          </svg>
+          <img src={capybaraImg} alt="ExoticMate Logo" style={{ width:40,height:40,borderRadius: '50%', objectFit: 'cover', background: '#fff' }} />
         )}
       </div>
       <div className={`bubble ${isUser ? 'user' : 'bot'}`}>
